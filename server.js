@@ -5,11 +5,11 @@ const cors = require("cors");
 const app = express();
 app.use(express.json());
 app.use(cors());
-const port = 5000;
+const port = 8000;
 const balanceRouter = require("./routes/balance");
 const walletRouter = require("./routes/walletCreation");
 const withdrawRouter = require("./routes/withdraw");
-const models = require("./models/index");
+const models = require("./models/");
 
 const { EtherWallets, sequelize } = models;
 

@@ -6,7 +6,6 @@ const { EtherWallets } = models;
 
 async function getBalance(req, res) {
   const { assetId } = req.params;
-  console.log("assetId: ", assetId);
 
   if (!assetId) {
     return res
@@ -21,14 +20,8 @@ async function getBalance(req, res) {
     const balance = formatEther(bal);
 
     const updateBalance = await EtherWallets.update(
-      {
-        balance: balance,
-      },
-      {
-        where: {
-          address: assetId,
-        },
-      }
+      { balance: parseFloat(balance) },
+      { where: { address: assetId } }
     );
 
     if (!updateBalance) {
