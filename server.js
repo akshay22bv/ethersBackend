@@ -9,16 +9,19 @@ const port = 8000;
 const balanceRouter = require("./routes/balance");
 const walletRouter = require("./routes/walletCreation");
 const withdrawRouter = require("./routes/withdraw");
+const bitcoinRouter = require("./routes/bitcoinWallet");
+const mnemonicRouter = require("./routes/btcmnemonic");
+const btcbalRouter = require("./routes/btcBalance");
 const models = require("./models/");
 
-const { EtherWallets, sequelize } = models;
+const { BitcoinWallets, sequelize } = models;
 
 // async function createWalletTable() {
 //   try {
-//     await EtherWallets.sync({ force: true }); // Use { force: true } to drop existing table and recreate
-//     console.log("EtherWallets table created successfully");
+//     await BitcoinWallets.sync({ force: true }); // Use { force: true } to drop existing table and recreate
+//     console.log("BitcoinWallets table created successfully");
 //   } catch (error) {
-//     console.error("Error creating EtherWallets table:", error);
+//     console.error("Error creating BitcoinWallets table:", error);
 //   } finally {
 //     await sequelize.close(); // Close the Sequelize connection when done
 //   }
@@ -32,6 +35,9 @@ const { EtherWallets, sequelize } = models;
 app.use("/balance", balanceRouter);
 app.use("/createWallet", walletRouter);
 app.use("/withdraw", withdrawRouter);
+app.use("/bitcoin", bitcoinRouter);
+app.use("/mnemonic", mnemonicRouter);
+app.use("/btc-balance", btcbalRouter);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

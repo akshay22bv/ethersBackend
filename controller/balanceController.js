@@ -30,7 +30,7 @@ async function getBalance(req, res) {
 
     res.send({ balance });
   } catch (error) {
-    res.status(500).send({ error: "Failed to fetch balance" });
+    res.status(500).send({ error: error });
   }
 }
 
