@@ -4,7 +4,10 @@ const { Model, DataTypes } = require("sequelize");
 module.exports = (sequelize) => {
   class EtherWallets extends Model {
     static associate(models) {
-      ///
+      this.hasOne(models.Mnemonics, {
+        foreignKey: "id",
+        sourceKey: "mnemonic",
+      });
     }
   }
   EtherWallets.init(
@@ -30,8 +33,18 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
 
-      balance: {
+      mnemonic: {
         type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+
+      path: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+
+      balance: {
+        type: DataTypes.FLOAT,
         allowNull: true,
         defaultValue: 0,
       },
@@ -40,6 +53,7 @@ module.exports = (sequelize) => {
         type: DataTypes.DATE,
         defaultValue: Date.now(),
       },
+
       updatedAt: {
         type: DataTypes.DATE,
         defaultValue: Date.now(),

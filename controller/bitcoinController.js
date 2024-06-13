@@ -1,7 +1,10 @@
 const bip39 = require("bip39");
 const bitcoin = require("bitcoinjs-lib");
 const BIP32Factory = require("bip32").default;
+const ECPairFactory = require("ecpair").default;
 const ecc = require("tiny-secp256k1");
+
+const ECPair = ECPairFactory(ecc);
 
 const models = require("../models/index");
 
@@ -9,8 +12,36 @@ const { BitcoinWallets, Mnemonics } = models;
 const { checkBtcBalance } = require("./helper");
 const axios = require("axios");
 
-// Generate a mnemonic
-// const mnemonic = bip39.generateMnemonic();
+// btc balance
+async function getBTCBalance(req, res) {
+  const { address } = req.params;
+  console.log("address: ", address);
+
+  if (!address) {
+    return res
+      .status(400)
+      .send({ error: "address query parameter is required" });
+  }
+
+  try {
+    const balanceSatoshis = await checkBtcBalance(address);
+    const balanceBTC = balanceSatoshis / 100000000; // Convert satoshis to BTC
+
+    const updateBalance = await BitcoinWallets.update(
+      { balance: parseFloat(balanceBTC) },
+      { where: { address: address } }
+    );
+
+    if (!updateBalance) {
+      res.status(500).send({ error: "Failed to update balance" });
+    }
+
+    res.send({ balanceBTC });
+  } catch (error) {
+    res.status(500).send({ error: error });
+  }
+}
+
 async function createBitcoinWallet(req, res) {
   try {
     const { mnemonicId } = req.params;
@@ -43,11 +74,11 @@ async function createBitcoinWallet(req, res) {
     let path;
 
     let pathCount = wallet ? Number(wallet?.path) + 1 : 0;
-    console.log("pathCount: ", pathCount);
+
     if (wallet) {
-      path = `m/44'/1'/0'/0/${pathCount}`;
+      path = `m/44'/0'/0'/0/${pathCount}`;
     } else {
-      path = `m/44'/1'/0'/0/${pathCount}`;
+      path = `m/44'/0'/0'/0/${pathCount}`;
     }
     const child = root.derivePath(path);
 
@@ -92,145 +123,179 @@ async function getAddressByMnemonic(req, res) {
       where: {
         mnemonic: menmonicId,
       },
+      order: [["path", "ASC"]],
     });
 
     res.json({ message: "success", body: { addresses } });
   } catch (error) {
-    console.log("error: ", error);
     throw new Error("Addresses fetch failed");
   }
 }
 
-async function createWithdraw(req, res) {
-  // try {
-  //   const { senderAddress, recipientAddress, amount } = req.body;
-
-  //   const amountValue = parseFloat(amount);
-
-  //   console.log({
-  //     senderAddress,
-  //     recipientAddress,
-  //     amountValue,
-  //   });
-  //   // Fetch UTXOs and create a new transaction using BlockCypher
-  //   const newTx = await axios.post(
-  //     `https://api.blockcypher.com/v1/btc/test3/txs/new`,
-  //     {
-  //       inputs: [{ addresses: [senderAddress] }],
-  //       outputs: [{ addresses: [recipientAddress], value: amountValue * 1e8 }],
-  //     }
-  //   );
-
-  //   console.log({ newTx });
-
-  //   if (!newTx.data) {
-  //     return res.status(500).send({ error: "Transaction creation failed" });
-  //   }
-
-  //   // Sign each input
-  //   newTx.data.tosign.forEach((toSign, index) => {
-  //     const keyPair = bitcoin.ECPair.fromWIF(
-  //       child.toWIF(),
-  //       bitcoin.networks.testnet
-  //     );
-  //     const signature = keyPair
-  //       .sign(Buffer.from(toSign, "hex"))
-  //       .toString("hex");
-  //     newTx.data.signatures[index] = signature;
-  //   });
-
-  //   // Send the signed transaction back to BlockCypher to broadcast
-  //   const sendTx = await axios.post(
-  //     `https://api.blockcypher.com/v1/btc/test3/txs/send`,
-  //     newTx.data
-  //   );
-
-  //   if (!sendTx.data || !sendTx.data.tx) {
-  //     return res.status(500).send({ error: "Transaction broadcast failed" });
-  //   }
-
-  //   res.send({
-  //     success: true,
-  //     message: "Transaction successful",
-  //     // txid: sendTx.data.tx.hash,
-  //   });
-  // } catch (error) {
-  //   res.status(500).send({ error: error.message });
-  // }
-
+const getLatestTransaction = async (address) => {
   try {
-    //   const { senderAddress, recipientAddress, amount } = req.body;
+    const url = `https://api.blockcypher.com/v1/btc/test3/addrs/${address}/full`;
+    const response = await axios.get(url);
+    const transactions = response.data.txs;
+    if (transactions.length > 0) {
+      const latestTransaction = transactions[0];
+      const previousTxid = latestTransaction.inputs[0].prev_hash;
+      //
+      // const previousHex = latestTransaction.hex;
+      //
 
-    //   const amountValue = parseFloat(amount);
-    // Convert the mnemonic to a seed
-    const seed = await bip39.mnemonicToSeed(mnemonic);
-    // Initialize BIP32 using the tiny-secp256k1 library
-    const bip32 = BIP32Factory(ecc);
-    const root = bip32.fromSeed(seed);
-
-    // Derive the sender's key pair from the seed
-    const path = "m/44'/0'/0'/0/0"; // Replace with appropriate path
-    const child = root.derivePath(path);
-
-    const keyPair = bitcoin.ECPair.fromPrivateKey(child.privateKey, {
-      network: bitcoin.networks.bitcoin, // Use testnet for testing
-    });
-
-    // Fetch UTXOs
-    const utxosResponse = await axios.get(
-      `https://api.blockcypher.com/v1/btc/main/addrs/${senderAddress}?unspentOnly=true`
-    );
-    const utxos = utxosResponse.data.txrefs;
-
-    const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin });
-
-    let inputAmount = 0;
-    utxos.forEach((utxo) => {
-      inputAmount += utxo.value;
-      psbt.addInput({
-        hash: utxo.tx_hash,
-        index: utxo.tx_output_n,
-        nonWitnessUtxo: Buffer.from(utxo.tx_output_hex, "hex"),
-      });
-    });
-
-    const outputAmount = Math.floor(amount * 1e8); // Convert amount to satoshis
-    const fee = 10000; // Define a fee
-    const change = inputAmount - outputAmount - fee;
-
-    psbt.addOutput({
-      address: recipientAddress,
-      value: outputAmount,
-    });
-
-    if (change > 0) {
-      psbt.addOutput({
-        address: senderAddress,
-        value: change,
-      });
+      return previousTxid;
+    } else {
+      throw new Error("No transactions found for the address.");
     }
+  } catch (error) {
+    throw new Error(`Error getting latest transaction: ${error.message}`);
+  }
+};
 
-    psbt.signAllInputs(keyPair);
-    psbt.finalizeAllInputs();
-
-    const tx = psbt.extractTransaction().toHex();
-
-    const broadcastResponse = await axios.post(
-      "https://api.blockcypher.com/v1/btc/main/txs/push",
-      {
-        tx: tx,
-      }
+async function createWithdraw(req, res) {
+  try {
+    const { senderAddress, recipientAddress, amount } = req.body;
+    const wallet = await BitcoinWallets.findOne({
+      where: {
+        address: senderAddress,
+      },
+      include: [{ model: Mnemonics }],
+    });
+    if (!wallet) {
+      res.status(500).send({ error: "Address not found" });
+    }
+    const testnet = bitcoin.networks.testnet;
+    const seed = bip39.mnemonicToSeedSync(wallet?.Mnemonic?.mnemonic);
+    const bip32 = BIP32Factory(ecc);
+    const root = bip32.fromSeed(seed, testnet);
+    const path = `m/44'/0'/0'/0/${wallet.path}`;
+    const child = root.derivePath(path);
+    const privateKeyBuffer = child.privateKey;
+    const privateKeyHex = privateKeyBuffer.toString("hex");
+    const keyPair = ECPair.fromPrivateKey(privateKeyBuffer, {
+      network: testnet,
+    });
+    const privateKeyWIF = keyPair.toWIF();
+    const receiverAddress = recipientAddress;
+    const previousTxid = await getLatestTransaction(senderAddress);
+    const previousHex = await fetchTransactionDetails(previousTxid);
+    const transactionHex = await createTransaction(
+      senderAddress,
+      privateKeyWIF,
+      receiverAddress,
+      amount
     );
 
-    return broadcastResponse.data;
+    const result = await broadcastTransaction(transactionHex);
+
+    res.status(200).send({ result });
   } catch (error) {
-    console.error("Error sending Bitcoin:", error);
-    throw new Error("Bitcoin transaction failed");
+    res.status(500).send({ error: error.message });
   }
+}
+
+async function broadcastTransaction(transactionHex) {
+  const response = await fetch(
+    "https://methodical-withered-seed.btc-testnet.quiknode.pro/0a3f41a86207988f65fe039213fedc5776af1bef/",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        method: "sendrawtransaction",
+        params: [transactionHex],
+      }),
+    }
+  );
+
+  const result = await response.json();
+  return result;
+}
+
+async function fetchTransactionDetails(transactionId) {
+  const response = await axios.get(
+    `https://blockstream.info/testnet/api/tx/${transactionId}/hex`
+  );
+  return response.data;
+}
+
+function calculateFee(inputs, outputs) {
+  const feeRate = 20; // Increase fee rate to 20 satoshis per byte
+  const txSize = inputs * 148 + outputs * 34 + 10; // approximate transaction size in bytes
+  return txSize * feeRate;
+}
+
+async function createTransaction(
+  senderAddress,
+  privateKeyWIF,
+  receiverAddress,
+  amount
+) {
+  const satoshiToSend = Math.round(amount * 100000000);
+
+  const network = bitcoin.networks.testnet;
+  const base_url = "https://api.blockcypher.com/v1/btc/test3";
+  const keyPair = ECPair.fromWIF(privateKeyWIF, network);
+  const psbt = new bitcoin.Psbt({ network: network });
+
+  const utxosResponse = await axios.get(
+    `${base_url}/addrs/${senderAddress}?unspentOnly=true`
+  );
+  const utxos = utxosResponse.data.txrefs;
+
+  let totalAmountAvailable = 0;
+  let inputCount = 0;
+  for (const utxo of utxos) {
+    totalAmountAvailable += utxo.value;
+    inputCount += 1;
+    if (totalAmountAvailable >= satoshiToSend) break;
+  }
+
+  if (totalAmountAvailable < satoshiToSend) {
+    throw new Error("Balance is too low for this transaction");
+  }
+
+  const fee = calculateFee(inputCount, 2); // 1 input, 2 outputs
+  if (totalAmountAvailable < satoshiToSend + fee) {
+    throw new Error(
+      "Balance is too low for this transaction with the fee included"
+    );
+  }
+
+  const changeAmount = totalAmountAvailable - (satoshiToSend + fee);
+
+  for (const utxo of utxos) {
+    const txData = await axios.get(
+      `${base_url}/txs/${utxo.tx_hash}?includeHex=true`
+    );
+    utxo.hex = txData.data.hex;
+
+    psbt.addInput({
+      hash: utxo.tx_hash,
+      index: utxo.tx_output_n,
+      nonWitnessUtxo: Buffer.from(utxo.hex, "hex"),
+    });
+
+    if (totalAmountAvailable >= satoshiToSend) break;
+  }
+
+  psbt.addOutput({ address: receiverAddress, value: satoshiToSend });
+
+  if (changeAmount > 546) {
+    // Include change only if it's above dust threshold
+    psbt.addOutput({ address: senderAddress, value: changeAmount });
+  }
+
+  psbt.signAllInputs(keyPair);
+  psbt.finalizeAllInputs();
+
+  const txRaw = psbt.extractTransaction();
+  return txRaw.toHex();
 }
 
 module.exports = {
   createBitcoinWallet,
   getAddressByMnemonic,
   createWithdraw,
+  getBTCBalance,
 };

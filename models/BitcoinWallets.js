@@ -33,15 +33,15 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
 
-      address: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-
       balance: {
         type: DataTypes.FLOAT,
         allowNull: true,
         defaultValue: 0,
+      },
+
+      address: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
 
       createdAt: {
