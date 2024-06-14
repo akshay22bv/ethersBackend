@@ -1,12 +1,12 @@
-'use strict';
-const { Model, DataTypes } = require('sequelize');
+"use strict";
+const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   class WalletAddress extends Model {
     static associate(models) {
       this.belongsTo(models.Mnemonic, {
-        foreignKey: 'walletId',
-        targetKey: 'walletId',
+        foreignKey: "walletId",
+        targetKey: "walletId",
       });
     }
   }
@@ -59,9 +59,9 @@ module.exports = (sequelize) => {
     },
     {
       sequelize,
-      modelName: 'WalletAddress',
-      tableName: 'WalletAddress',
-      deletedAt: 'deletedAt',
+      modelName: "WalletAddress",
+      tableName: "WalletAddress",
+      deletedAt: "deletedAt",
       timestamps: true,
       paranoid: true,
     }

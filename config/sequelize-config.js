@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   // local: {
@@ -12,12 +12,12 @@ module.exports = {
   // },
 
   development: {
-    username: 'postgres',
-    password: 'admin',
-    database: 'exchange',
-    host: 'localhost',
-    dialect: 'postgres',
-    timezone: 'utc',
+    username: "postgres",
+    password: "Avb@1221",
+    database: "exchange",
+    host: "localhost",
+    dialect: "postgres",
+    timezone: "utc",
     port: 5432,
     ssl: true,
     pool: {

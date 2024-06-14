@@ -1,12 +1,12 @@
 // Import necessary modules
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   class Mnemonic extends Model {
     static associate(models) {
       this.hasMany(models.WalletAddress, {
-        foreignKey: 'walletId',
-        sourceKey: 'walletId',
+        foreignKey: "walletId",
+        sourceKey: "walletId",
       });
     }
   } // Define a new model for generating mnemonic
@@ -53,8 +53,8 @@ module.exports = (sequelize) => {
     },
     {
       sequelize,
-      modelName: 'Mnemonic',
-      tableName: 'Mnemonic',
+      modelName: "Mnemonic",
+      tableName: "Mnemonic",
       timestamps: true,
       paranoid: true,
     }
