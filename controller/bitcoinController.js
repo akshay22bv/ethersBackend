@@ -116,22 +116,6 @@ async function createBitcoinWallet(req, res) {
   }
 }
 
-async function getAddressByMnemonic(req, res) {
-  const { menmonicId } = req.params;
-  try {
-    const addresses = await BitcoinWallets.findAll({
-      where: {
-        mnemonic: menmonicId,
-      },
-      order: [["path", "ASC"]],
-    });
-
-    res.json({ message: "success", body: { addresses } });
-  } catch (error) {
-    throw new Error("Addresses fetch failed");
-  }
-}
-
 const getLatestTransaction = async (address) => {
   try {
     const url = `https://api.blockcypher.com/v1/btc/test3/addrs/${address}/full`;
@@ -295,7 +279,6 @@ async function createTransaction(
 
 module.exports = {
   createBitcoinWallet,
-  getAddressByMnemonic,
   createWithdraw,
   getBTCBalance,
 };
