@@ -1,13 +1,13 @@
-const bip39 = require("bip39");
-const bitcoin = require("bitcoinjs-lib");
-const BIP32Factory = require("bip32").default;
-const ecc = require("tiny-secp256k1");
+const bip39 = require('bip39');
+const bitcoin = require('bitcoinjs-lib');
+const BIP32Factory = require('bip32').default;
+const ecc = require('tiny-secp256k1');
 
-const models = require("../models/index");
+const models = require('../models/index');
 
-const { BitcoinWallets, Mnemonics } = models;
-const { checkBtcBalance } = require("./helper");
-const axios = require("axios");
+const { BitcoinWallets, Mnemonic } = models;
+const { checkBtcBalance } = require('./helper');
+const axios = require('axios');
 
 // Generate a mnemonic
 // const mnemonic = bip39.generateMnemonic();
@@ -17,17 +17,17 @@ async function createBitcoinWallet(req, res) {
 
     const wallet = await BitcoinWallets.findOne({
       where: { mnemonic: mnemonicId },
-      order: [["path", "DESC"]],
+      order: [['path', 'DESC']],
       limit: 1,
-      include: [{ model: Mnemonics }],
+      include: [{ model: Mnemonic }],
     });
 
-    const foundMnemonic = await Mnemonics.findOne({
+    const foundMnemonic = await Mnemonic.findOne({
       where: { id: mnemonicId },
     });
 
     if (!foundMnemonic) {
-      res.status(500).send({ error: "Mnemonic not found" });
+      res.status(500).send({ error: 'Mnemonic not found' });
     }
 
     // Convert the mnemonic to a seed
@@ -43,7 +43,7 @@ async function createBitcoinWallet(req, res) {
     let path;
 
     let pathCount = wallet ? Number(wallet?.path) + 1 : 0;
-    console.log("pathCount: ", pathCount);
+    console.log('pathCount: ', pathCount);
     if (wallet) {
       path = `m/44'/1'/0'/0/${pathCount}`;
     } else {
@@ -58,7 +58,7 @@ async function createBitcoinWallet(req, res) {
     });
 
     if (!address) {
-      res.status(500).send({ error: "Address creation failed" });
+      res.status(500).send({ error: 'Address creation failed' });
     }
 
     const balanceSatoshis = await checkBtcBalance(address);
@@ -74,12 +74,12 @@ async function createBitcoinWallet(req, res) {
     if (!createdBtcWallet) {
       res.send({
         success: true,
-        message: "success",
+        message: 'success',
         body: { createdBtcWallet },
       });
     }
 
-    res.send({ success: true, message: "success", body: { createdBtcWallet } });
+    res.send({ success: true, message: 'success', body: { createdBtcWallet } });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -94,10 +94,10 @@ async function getAddressByMnemonic(req, res) {
       },
     });
 
-    res.json({ message: "success", body: { addresses } });
+    res.json({ message: 'success', body: { addresses } });
   } catch (error) {
-    console.log("error: ", error);
-    throw new Error("Addresses fetch failed");
+    console.log('error: ', error);
+    throw new Error('Addresses fetch failed');
   }
 }
 
@@ -190,7 +190,7 @@ async function createWithdraw(req, res) {
       psbt.addInput({
         hash: utxo.tx_hash,
         index: utxo.tx_output_n,
-        nonWitnessUtxo: Buffer.from(utxo.tx_output_hex, "hex"),
+        nonWitnessUtxo: Buffer.from(utxo.tx_output_hex, 'hex'),
       });
     });
 
@@ -216,7 +216,7 @@ async function createWithdraw(req, res) {
     const tx = psbt.extractTransaction().toHex();
 
     const broadcastResponse = await axios.post(
-      "https://api.blockcypher.com/v1/btc/main/txs/push",
+      'https://api.blockcypher.com/v1/btc/main/txs/push',
       {
         tx: tx,
       }
@@ -224,8 +224,8 @@ async function createWithdraw(req, res) {
 
     return broadcastResponse.data;
   } catch (error) {
-    console.error("Error sending Bitcoin:", error);
-    throw new Error("Bitcoin transaction failed");
+    console.error('Error sending Bitcoin:', error);
+    throw new Error('Bitcoin transaction failed');
   }
 }
 

@@ -2,37 +2,37 @@
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class BitcoinWallets extends Model {
+  class WalletAddress extends Model {
     static associate(models) {
-      // this.hasOne(models.Mnemonic, {
-      //   foreignKey: 'id',
-      //   sourceKey: 'mnemonic',
-      // });
+      this.belongsTo(models.Mnemonic, {
+        foreignKey: 'walletId',
+        targetKey: 'walletId',
+      });
     }
   }
-  BitcoinWallets.init(
+  WalletAddress.init(
     {
       id: {
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-
-      username: {
+      walletId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      assetId: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
-
-      mnemonic: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+      privateKey: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
-
-      path: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+      publicKey: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
-
       address: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -59,12 +59,12 @@ module.exports = (sequelize) => {
     },
     {
       sequelize,
-      modelName: 'BitcoinWallets',
-      tableName: 'BitcoinWallets',
+      modelName: 'WalletAddress',
+      tableName: 'WalletAddress',
       deletedAt: 'deletedAt',
       timestamps: true,
       paranoid: true,
     }
   );
-  return BitcoinWallets;
+  return WalletAddress;
 };

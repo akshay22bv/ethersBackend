@@ -1,49 +1,43 @@
-'use strict';
+// Import necessary modules
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class BitcoinWallets extends Model {
+  class Mnemonic extends Model {
     static associate(models) {
-      // this.hasOne(models.Mnemonic, {
-      //   foreignKey: 'id',
-      //   sourceKey: 'mnemonic',
-      // });
+      this.hasMany(models.WalletAddress, {
+        foreignKey: 'walletId',
+        sourceKey: 'walletId',
+      });
     }
-  }
-  BitcoinWallets.init(
+  } // Define a new model for generating mnemonic
+  Mnemonic.init(
     {
       id: {
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
+        allowNull: false,
       },
-
-      username: {
+      walletId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      walletName: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
-
       mnemonic: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-
-      path: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-
-      address: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
-
-      balance: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
+      privateKey: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
-
+      publicKey: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
@@ -59,12 +53,11 @@ module.exports = (sequelize) => {
     },
     {
       sequelize,
-      modelName: 'BitcoinWallets',
-      tableName: 'BitcoinWallets',
-      deletedAt: 'deletedAt',
+      modelName: 'Mnemonic',
+      tableName: 'Mnemonic',
       timestamps: true,
       paranoid: true,
     }
   );
-  return BitcoinWallets;
+  return Mnemonic;
 };
