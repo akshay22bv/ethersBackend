@@ -12,6 +12,8 @@ const {
   getBalancePolygon_USDT,
 } = require('../controller/getBalancePolygon_USDT');
 const { getBTCBalance } = require('../controller/btcBalController');
+const { getUsdtTRONBalance } = require('../controller/getBalanceTron_USDT');
+const { getUsdcTRONBalance } = require('../controller/getBalanceTron_USDC');
 
 // Define the GET route
 router.get('/eth/:walletAddress', getBalanceETH);
@@ -22,5 +24,7 @@ router.get('/bsc_usdt/:walletAddress', getBalanceBSC_USDT);
 router.get('/polygon_usdc/:walletAddress', getBalancePolygon_USDC);
 router.get('/polygon_usdt/:walletAddress', getBalancePolygon_USDT);
 router.get('/btc/:walletAddress', getBTCBalance);
+router.get('/usdt_tron/:walletAddress', getUsdtTRONBalance);
+router.get('/usdc_tron/:walletAddress', getUsdcTRONBalance);
 
 module.exports = router;

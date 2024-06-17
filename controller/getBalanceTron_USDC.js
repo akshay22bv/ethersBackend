@@ -1,39 +1,44 @@
-var Web3 = require('web3');
+const TronWeb = require('tronweb');
+const models = require('../models/index');
+const { WalletAddress } = models;
 
-// USDCERC20 balance
-async function getBalanceTRON_USDC(req, res) {
+async function getUsdcTRONBalance(req, res) {
   try {
-    // const { walletAddress } = req.params;
-    const walletAddress = '0xCA78D52aC719Ce90610AF8845A282FE50F5840aC';
-
-    const minABI = [
-      // balanceOf
-      {
-        constant: true,
-        inputs: [{ name: '_owner', type: 'address' }],
-        name: 'balanceOf',
-        outputs: [{ name: 'balance', type: 'uint256' }],
-        type: 'function',
+    const contractAddress = 'TU2T8vpHZhCNY8fXGVaHyeZrKm8s6HEXWe';
+    const { walletAddress } = req.params;
+    // const walletAddress = 'TXHABjEsGH1eVkhhQeaAMdsJHAtt7PrWTg';
+    const assetId = 'USDC_TRON';
+    const foundAddress = await WalletAddress.findOne({
+      where: {
+        address: walletAddress,
+        assetId,
       },
-    ];
-    const endpointUrl = 'https://api.trongrid.io/jsonrpc';
-    const httpProvider = new Web3.providers.HttpProvider(endpointUrl);
-    const web3Client = new Web3(httpProvider);
-    const tokenAddress = '0xB2eE34A36c7e4593A1DB6F581304dd04cC896446';
-    const contract = new web3Client.eth.Contract(minABI, tokenAddress);
-    const result = await contract.methods.balanceOf(walletAddress).call();
-    const resultInEther = web3Client.utils.fromWei(result, 'ether');
-    console.log('resultInEther', resultInEther);
-    // res.json({
-    //   success: true,
-    //   message: 'Fetched USDCERC20 balance Successfully',
-    //   body: { resultInEther },
-    // });
+    });
+
+    const tronWeb = new TronWeb({
+      fullHost: 'https://nile.trongrid.io/',
+      privateKey: foundAddress.privateKey,
+    });
+    const contract = await tronWeb.contract().at(contractAddress);
+    const balance = await contract.methods
+      .balanceOf(foundAddress.address)
+      .call();
+    const finalBalance = balance / 1e6;
+
+    console.log(`USDC(TRON) Balance ${finalBalance}`);
+
+    res.json({
+      success: true,
+      message: 'Fetched USDC(TRON) balance Successfully',
+      body: { finalBalance },
+    });
   } catch (error) {
-    console.log('failed to get USDCERC20 balance ', error);
+    console.error('Error getting USDC(TRON) balance:', error);
   }
 }
-getBalanceTRON_USDC();
-// module.exports = {
-//   getBalanceBSC_USDC,
-// };
+
+// getUsdcTRONBalance();
+
+module.exports = {
+  getUsdcTRONBalance,
+};

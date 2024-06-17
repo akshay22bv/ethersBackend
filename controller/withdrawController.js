@@ -13,11 +13,11 @@ const { WalletAddress, Transactions, Mnemonic } = models;
 const { YOUR_ALCHEMY_API_KEY, NETWORK } = require('../helper/constants');
 const { v4: uuidv4 } = require('uuid');
 const Web3 = require('web3');
+const TronWeb = require('tronweb');
 
 async function Withdraw(req, res) {
   try {
     const { assetId } = req.params;
-    console.log('assetId: ', assetId);
 
     const { senderAddress, receiverAddress, amount } = req.body;
 
@@ -75,13 +75,13 @@ async function Withdraw(req, res) {
       console.log('trxHash: ', trxHash);
     }
 
-    if (assetId === 'USDC_TRON') {
-      trxHash = await createUSDCTRONWithdraw(req, res, foundAddress);
+    if (assetId === 'USDT_TRON') {
+      trxHash = await createUSDTTRONWithdraw(req, res, foundAddress);
       console.log('trxHash: ', trxHash);
     }
 
-    if (assetId === 'USDT_TRON') {
-      trxHash = await createUSDTTRONWithdraw(req, res, foundAddress);
+    if (assetId === 'USDC_TRON') {
+      trxHash = await createUSDCTRONWithdraw(req, res, foundAddress);
       console.log('trxHash: ', trxHash);
     }
 
@@ -536,6 +536,52 @@ async function createUSDTPOLYGONWithdraw(req, res, privateKey) {
   }
 }
 
+// USDT TRON WITHDRAW
+async function createUSDTTRONWithdraw(req, res, privateKey) {
+  const destructPrivateKey = privateKey.dataValues.privateKey;
+  const tronWeb = new TronWeb({
+    fullHost: 'https://nile.trongrid.io/',
+    privateKey: destructPrivateKey,
+  });
+  const { senderAddress, receiverAddress, amount } = req.body;
+  const contractAddress = 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj';
+  try {
+    const contract = await tronWeb.contract().at(contractAddress);
+    const trx = await contract.methods
+      .transfer(receiverAddress, amount * 1000000)
+      .send({
+        from: senderAddress,
+      });
+    console.log('trx:', trx);
+    return trx;
+  } catch (error) {
+    console.error('Error sending USDT:', error);
+  }
+}
+
+// USDC TRON WITHDRAW
+async function createUSDCTRONWithdraw(req, res, privateKey) {
+  const destructPrivateKey = privateKey.dataValues.privateKey;
+  const tronWeb = new TronWeb({
+    fullHost: 'https://nile.trongrid.io/',
+    privateKey: destructPrivateKey,
+  });
+  const { senderAddress, receiverAddress, amount } = req.body;
+  const contractAddress = 'TU2T8vpHZhCNY8fXGVaHyeZrKm8s6HEXWe';
+  try {
+    const contract = await tronWeb.contract().at(contractAddress);
+    const trx = await contract.methods
+      .transfer(receiverAddress, amount * 1000000)
+      .send({
+        from: senderAddress,
+      });
+    console.log('trx:', trx);
+    return trx;
+  } catch (error) {
+    console.error('Error sending USDT:', error);
+  }
+}
+
 // BTC WITHDRAW
 async function createBTCWithdraw(req, res, foundAddress) {
   try {
@@ -568,6 +614,7 @@ async function createBTCWithdraw(req, res, foundAddress) {
     res.status(500).send({ error: error.message });
   }
 }
+
 async function broadcastTransaction(transactionHex) {
   const response = await fetch(
     'https://maximum-icy-surf.btc-testnet.quiknode.pro/f724ad3b2e0cbb6368dbb00bb1f9750dd7139c06/',

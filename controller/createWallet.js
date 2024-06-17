@@ -81,7 +81,7 @@ async function createhdwallet(req, res) {
         privateKey: trxWallet.privateKey,
         publicKey: trxWallet.publicKey,
         address: trxWallet.address.base58,
-        assetId: 'USDC_TRON',
+        assetId: 'USDT_TRON',
       },
       {
         walletId,
