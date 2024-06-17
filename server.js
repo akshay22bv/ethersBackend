@@ -14,6 +14,7 @@ const mnemonicRouter = require('./routes/btcmnemonic');
 const btcbalRouter = require('./routes/btcBalance');
 const loginRoute = require('./routes/login');
 const walletsRoute = require('./routes/mnemonicNWallets');
+const webhookRoute = require('./routes/webhook');
 const transactions = require('./routes/transactions');
 const balances = require('./routes/balance');
 const models = require('./models/');
@@ -44,6 +45,7 @@ app.use('/mnemonic', mnemonicRouter);
 app.use('/btc-balance', btcbalRouter);
 app.use('/login', loginRoute);
 app.use('/wallets', walletsRoute);
+app.use('/webhooks', webhookRoute);
 app.use('/transactions', transactions);
 // app.use('/balance', balances);
 
