@@ -45,7 +45,7 @@ app.use('/btc-balance', btcbalRouter);
 app.use('/login', loginRoute);
 app.use('/wallets', walletsRoute);
 app.use('/transactions', transactions);
-app.use('/balance', balances);
+// app.use('/balance', balances);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

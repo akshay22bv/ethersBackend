@@ -4,6 +4,7 @@ var Web3 = require('web3');
 async function getBalanceUSDCERC20(req, res) {
   try {
     const { walletAddress } = req.params;
+    // const walletAddress = '0xCA78D52aC719Ce90610AF8845A282FE50F5840aC';
     const minABI = [
       // balanceOf
       {
@@ -15,7 +16,7 @@ async function getBalanceUSDCERC20(req, res) {
       },
     ];
     const endpointUrl =
-      'https://neat-lively-meadow.ethereum-sepolia.quiknode.pro/d9a99abec980322333dd34b02caf53b996a114d1/';
+      'https://serene-holy-slug.ethereum-sepolia.quiknode.pro/4ab1f5390b551a245dfdd500995143c9cae3d654/';
     const httpProvider = new Web3.providers.HttpProvider(endpointUrl);
     const web3Client = new Web3(httpProvider);
     const tokenAddress = '0xB2eE34A36c7e4593A1DB6F581304dd04cC896446';
@@ -23,6 +24,7 @@ async function getBalanceUSDCERC20(req, res) {
     // const walletAddress = '0xCA78D52aC719Ce90610AF8845A282FE50F5840aC';
     const result = await contract.methods.balanceOf(walletAddress).call();
     const resultInEther = web3Client.utils.fromWei(result, 'ether');
+    console.log('resultInEther', resultInEther);
     res.json({
       success: true,
       message: 'Fetched USDCERC20 balance Successfully',
@@ -32,7 +34,7 @@ async function getBalanceUSDCERC20(req, res) {
     console.log('failed to get USDCERC20 balance ', error);
   }
 }
-
+// getBalanceUSDCERC20();
 module.exports = {
   getBalanceUSDCERC20,
 };

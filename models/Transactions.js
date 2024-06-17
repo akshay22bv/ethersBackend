@@ -27,7 +27,7 @@ module.exports = (sequelize) => {
       },
       transactiontype: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       transactionHash: {
         type: DataTypes.STRING,
@@ -47,7 +47,7 @@ module.exports = (sequelize) => {
       },
       fee: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       status: {
         type: DataTypes.STRING,

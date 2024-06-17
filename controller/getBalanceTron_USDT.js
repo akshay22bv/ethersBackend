@@ -1,11 +1,10 @@
 var Web3 = require('web3');
-const { ethers } = require('ethers');
 
-// eth balance
-async function getBalanceUSDT(req, res) {
+// USDCERC20 balance
+async function getBalanceTron_USDT(req, res) {
   try {
-    const { walletAddress } = req.params;
-    // const walletAddress = '0xCA78D52aC719Ce90610AF8845A282FE50F5840aC';
+    // const { walletAddress } = req.params;
+    const walletAddress = 'TX3iiHiE7KNQfCRRNJJPKkxrur6P1h2qLD';
 
     const minABI = [
       // balanceOf
@@ -18,27 +17,24 @@ async function getBalanceUSDT(req, res) {
       },
     ];
     const endpointUrl =
-      'https://serene-holy-slug.ethereum-sepolia.quiknode.pro/4ab1f5390b551a245dfdd500995143c9cae3d654/';
+      'https://fittest-few-isle.matic-amoy.quiknode.pro/0b7d93d6ccc97c5a2f959c5fedd5ac36bec4eb91/';
     const httpProvider = new Web3.providers.HttpProvider(endpointUrl);
     const web3Client = new Web3(httpProvider);
-    const tokenAddress = '0x10cc8B8910F149ae4Cf81859d05dCDD34b792F7b';
+    const tokenAddress = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs';
     const contract = new web3Client.eth.Contract(minABI, tokenAddress);
     const result = await contract.methods.balanceOf(walletAddress).call();
-
     const resultInEther = web3Client.utils.fromWei(result, 'ether');
-
     console.log('resultInEther', resultInEther);
-
-    res.json({
-      success: true,
-      message: 'Fetched USDT balance Successfully',
-      body: { resultInEther },
-    });
+    // res.json({
+    //   success: true,
+    //   message: 'Fetched USDCERC20 balance Successfully',
+    //   body: { resultInEther },
+    // });
   } catch (error) {
-    console.log('failed to get USDT balance ', error);
+    console.log('failed to get USDCERC20 balance ', error);
   }
 }
-// getBalanceUSDT();
-module.exports = {
-  getBalanceUSDT,
-};
+getBalanceTron_USDT();
+// module.exports = {
+//   getBalanceBSC_USDC,
+// };

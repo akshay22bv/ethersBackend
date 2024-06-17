@@ -12,7 +12,7 @@ const { Mnemonic, WalletAddress } = models;
 async function createhdwallet(req, res) {
   try {
     const mnemonicGen = bip39.generateMnemonic();
-    console.log('mnemonic', mnemonicGen);
+    // console.log('mnemonic', mnemonicGen);
 
     const lastMnemonic = await Mnemonic.findOne({
       order: [['walletId', 'DESC']],
@@ -28,21 +28,21 @@ async function createhdwallet(req, res) {
     }
     const { privateKey, publicKey } = createdWallet;
     const ethAddress = createdWallet.address;
-    console.log('ETH ADDRESS', createdWallet);
-
+    // console.log('ETH ADDRESS', createdWallet);
     //BITCOIN
+    const testnet = bitcoin.networks.testnet;
     const seed = await bip39.mnemonicToSeed(mnemonicGen);
     const bip32 = BIP32Factory(ecc);
-    const root = bip32.fromSeed(seed);
+    const root = bip32.fromSeed(seed, testnet);
     let path;
     pathCount = 0;
-    path = `m/44'/1'/0'/0/${pathCount}`;
+    path = `m/44'/0'/0'/0/${pathCount}`;
     const child = root.derivePath(path);
     const { address } = bitcoin.payments.p2pkh({
       pubkey: child.publicKey,
       network: bitcoin.networks.testnet,
     });
-    console.log('Bitcoin Address ', address);
+    // console.log('Bitcoin Address ', address);
     function removeHexPrefix(hexString) {
       if (typeof hexString !== 'string' || !hexString.startsWith('0x')) {
         return hexString; // Not a string or doesn't start with 0x
@@ -57,18 +57,18 @@ async function createhdwallet(req, res) {
     const eventServer = new HttpProvider('https://api.trongrid.io');
     const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
     const trxWallet = await tronWeb.createAccount(removeHexPrefix(privateKey));
-    console.log('TRX Address ', trxWallet);
+    // console.log('TRX Address ', trxWallet);
 
     //BSC
     const web3_bsc = new Web3('https://bsc-dataseed1.binance.org:443');
     var bscWallet = web3_bsc.eth.accounts.privateKeyToAccount(privateKey);
-    console.log('BSC Address ', bscWallet);
+    // console.log('BSC Address ', bscWallet);
 
     //Polygon
     const web3_polygon = new Web3('https://polygon-rpc.com');
     var polygonWallet =
       web3_polygon.eth.accounts.privateKeyToAccount(privateKey);
-    console.log('Polygon Address ', polygonWallet);
+    // console.log('Polygon Address ', polygonWallet);
 
     //End
 
