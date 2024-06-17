@@ -36,7 +36,6 @@ async function Withdraw(req, res) {
     let trxHash;
 
     if (assetId === 'ETH') {
-
       trxHash = await createETHWithdraw(req, res, foundAddress.privateKey);
     }
 
@@ -46,7 +45,6 @@ async function Withdraw(req, res) {
     }
 
     if (assetId === 'USDC') {
-
       trxHash = await createUSDCERC20Withdraw(req, res, foundAddress);
 
       console.log('trxHash: ', trxHash);
@@ -58,7 +56,7 @@ async function Withdraw(req, res) {
     }
 
     if (assetId === 'USDC_BSC') {
-      trxHash = await creatUSDCBSCWithdraw(req, res, foundAddress);
+      trxHash = await createUSDCBSCWithdraw(req, res, foundAddress);
       console.log('trxHash: ', trxHash);
     }
 
@@ -143,10 +141,10 @@ async function createETHWithdraw(req, res, privateKey) {
 // USDCERC20 WITHDRAW
 
 async function createUSDCERC20Withdraw(req, res, privateKey) {
+  const destructPrivateKey = privateKey.dataValues.privateKey;
   try {
     const { senderAddress, receiverAddress, amount } = req.body;
-    const privateKey =
-      '0x0181ff5603a9e185ba7c41196c6e8c6a7b6cf9c7ae8861b0e184010e3f3c23cb';
+
     const tokenContractAddress = '0xB2eE34A36c7e4593A1DB6F581304dd04cC896446';
     const tokenDecimals = 18; // The number of decimals used by the token
     // Initialize Web3 instance
@@ -191,10 +189,12 @@ async function createUSDCERC20Withdraw(req, res, privateKey) {
       data: tokenContract.methods
         .transfer(receiverAddress, amountToSend)
         .encodeABI(),
-      gas: 200000000,
+      gas: 200000,
     };
-    console.log('amountToSend', amountToSend);
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+    const signedTx = await web3.eth.accounts.signTransaction(
+      tx,
+      destructPrivateKey
+    );
 
     const trx = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
     console.log('trx', trx);
@@ -206,6 +206,335 @@ async function createUSDCERC20Withdraw(req, res, privateKey) {
 }
 
 // USDTERC20 WITHDRAW
+
+async function createUSDTERC20Withdraw(req, res, privateKey) {
+  const destructPrivateKey = privateKey.dataValues.privateKey;
+  try {
+    const { senderAddress, receiverAddress, amount } = req.body;
+
+    const tokenContractAddress = '0x10cc8B8910F149ae4Cf81859d05dCDD34b792F7b';
+    const tokenDecimals = 18; // The number of decimals used by the token
+    // Initialize Web3 instance
+    const web3 = new Web3(
+      new Web3.providers.HttpProvider(
+        'https://empty-muddy-replica.ethereum-sepolia.quiknode.pro/e283e52f6ddd6eb45e91e745c31c5e2913975de0/'
+      )
+    );
+    // ERC-20 token ABI
+    const tokenAbi = [
+      {
+        constant: false,
+        inputs: [
+          {
+            name: '_to',
+            type: 'address',
+          },
+          {
+            name: '_value',
+            type: 'uint256',
+          },
+        ],
+        name: 'transfer',
+        outputs: [
+          {
+            name: '',
+            type: 'bool',
+          },
+        ],
+        type: 'function',
+      },
+    ];
+    // Create contract instance
+    const tokenContract = new web3.eth.Contract(tokenAbi, tokenContractAddress);
+
+    const amountToSend = await web3.utils
+      .toBN(web3.utils.toWei(amount, 'ether'))
+      .div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - tokenDecimals)));
+    const tx = {
+      from: senderAddress,
+      to: tokenContractAddress,
+      data: tokenContract.methods
+        .transfer(receiverAddress, amountToSend)
+        .encodeABI(),
+      gas: 200000,
+    };
+    const signedTx = await web3.eth.accounts.signTransaction(
+      tx,
+      destructPrivateKey
+    );
+
+    const trx = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    console.log('trx', trx);
+    return trx?.transactionHash;
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+    console.log('error', error);
+  }
+}
+
+// USDC BSC WITHDRAW
+async function createUSDCBSCWithdraw(req, res, privateKey) {
+  const destructPrivateKey = privateKey.dataValues.privateKey;
+  try {
+    const { senderAddress, receiverAddress, amount } = req.body;
+
+    const tokenContractAddress = '0x10cc8b8910f149ae4cf81859d05dcdd34b792f7b';
+    const tokenDecimals = 18; // The number of decimals used by the token
+    // Initialize Web3 instance
+    const web3 = new Web3(
+      new Web3.providers.HttpProvider(
+        'https://snowy-flashy-log.bsc-testnet.quiknode.pro/bf2dacbef1edf1ce2e4982dd520ff7aa4df16c1a/'
+      )
+    );
+    // ERC-20 token ABI
+    const tokenAbi = [
+      {
+        constant: false,
+        inputs: [
+          {
+            name: '_to',
+            type: 'address',
+          },
+          {
+            name: '_value',
+            type: 'uint256',
+          },
+        ],
+        name: 'transfer',
+        outputs: [
+          {
+            name: '',
+            type: 'bool',
+          },
+        ],
+        type: 'function',
+      },
+    ];
+    // Create contract instance
+    const tokenContract = new web3.eth.Contract(tokenAbi, tokenContractAddress);
+
+    const amountToSend = await web3.utils
+      .toBN(web3.utils.toWei(amount, 'ether'))
+      .div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - tokenDecimals)));
+    const tx = {
+      from: senderAddress,
+      to: tokenContractAddress,
+      data: tokenContract.methods
+        .transfer(receiverAddress, amountToSend)
+        .encodeABI(),
+      gas: 200000,
+    };
+    const signedTx = await web3.eth.accounts.signTransaction(
+      tx,
+      destructPrivateKey
+    );
+
+    const trx = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    console.log('trx', trx);
+    return trx?.transactionHash;
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+    console.log('error', error);
+  }
+}
+
+// USDT BSC WITHDRAW
+async function createUSDTBSCWithdraw(req, res, privateKey) {
+  const destructPrivateKey = privateKey.dataValues.privateKey;
+  try {
+    const { senderAddress, receiverAddress, amount } = req.body;
+
+    const tokenContractAddress = '0x3fa2529b98ca9c414d66f85e62f450ebf3b7dd80';
+    const tokenDecimals = 18; // The number of decimals used by the token
+    // Initialize Web3 instance
+    const web3 = new Web3(
+      new Web3.providers.HttpProvider(
+        'https://snowy-flashy-log.bsc-testnet.quiknode.pro/bf2dacbef1edf1ce2e4982dd520ff7aa4df16c1a/'
+      )
+    );
+    // ERC-20 token ABI
+    const tokenAbi = [
+      {
+        constant: false,
+        inputs: [
+          {
+            name: '_to',
+            type: 'address',
+          },
+          {
+            name: '_value',
+            type: 'uint256',
+          },
+        ],
+        name: 'transfer',
+        outputs: [
+          {
+            name: '',
+            type: 'bool',
+          },
+        ],
+        type: 'function',
+      },
+    ];
+    // Create contract instance
+    const tokenContract = new web3.eth.Contract(tokenAbi, tokenContractAddress);
+
+    const amountToSend = await web3.utils
+      .toBN(web3.utils.toWei(amount, 'ether'))
+      .div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - tokenDecimals)));
+    const tx = {
+      from: senderAddress,
+      to: tokenContractAddress,
+      data: tokenContract.methods
+        .transfer(receiverAddress, amountToSend)
+        .encodeABI(),
+      gas: 200000,
+    };
+    const signedTx = await web3.eth.accounts.signTransaction(
+      tx,
+      destructPrivateKey
+    );
+
+    const trx = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    console.log('trx', trx);
+    return trx?.transactionHash;
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+    console.log('error', error);
+  }
+}
+
+// USDC POLYGON WITHDRAW
+async function createUSDCPOLYGONWithdraw(req, res, privateKey) {
+  const destructPrivateKey = privateKey.dataValues.privateKey;
+  try {
+    const { senderAddress, receiverAddress, amount } = req.body;
+
+    const tokenContractAddress = '0xB2eE34A36c7e4593A1DB6F581304dd04cC896446';
+    const tokenDecimals = 18; // The number of decimals used by the token
+    // Initialize Web3 instance
+    const web3 = new Web3(
+      new Web3.providers.HttpProvider(
+        'https://soft-capable-tab.matic-amoy.quiknode.pro/3b3c38c1c99fc87be05f8600e58488002f3a5c67/'
+      )
+    );
+    // ERC-20 token ABI
+    const tokenAbi = [
+      {
+        constant: false,
+        inputs: [
+          {
+            name: '_to',
+            type: 'address',
+          },
+          {
+            name: '_value',
+            type: 'uint256',
+          },
+        ],
+        name: 'transfer',
+        outputs: [
+          {
+            name: '',
+            type: 'bool',
+          },
+        ],
+        type: 'function',
+      },
+    ];
+    // Create contract instance
+    const tokenContract = new web3.eth.Contract(tokenAbi, tokenContractAddress);
+
+    const amountToSend = await web3.utils
+      .toBN(web3.utils.toWei(amount, 'ether'))
+      .div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - tokenDecimals)));
+    const tx = {
+      from: senderAddress,
+      to: tokenContractAddress,
+      data: tokenContract.methods
+        .transfer(receiverAddress, amountToSend)
+        .encodeABI(),
+      gas: 200000,
+    };
+    const signedTx = await web3.eth.accounts.signTransaction(
+      tx,
+      destructPrivateKey
+    );
+
+    const trx = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    console.log('trx', trx);
+    return trx?.transactionHash;
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+    console.log('error', error);
+  }
+}
+
+// USDT POLYGON WITHDRAW
+async function createUSDTPOLYGONWithdraw(req, res, privateKey) {
+  const destructPrivateKey = privateKey.dataValues.privateKey;
+  try {
+    const { senderAddress, receiverAddress, amount } = req.body;
+
+    const tokenContractAddress = '0xB25E4a0e4805d363E71EE0621449fd8B3135b928';
+    const tokenDecimals = 18; // The number of decimals used by the token
+    // Initialize Web3 instance
+    const web3 = new Web3(
+      new Web3.providers.HttpProvider(
+        'https://soft-capable-tab.matic-amoy.quiknode.pro/3b3c38c1c99fc87be05f8600e58488002f3a5c67/'
+      )
+    );
+    // ERC-20 token ABI
+    const tokenAbi = [
+      {
+        constant: false,
+        inputs: [
+          {
+            name: '_to',
+            type: 'address',
+          },
+          {
+            name: '_value',
+            type: 'uint256',
+          },
+        ],
+        name: 'transfer',
+        outputs: [
+          {
+            name: '',
+            type: 'bool',
+          },
+        ],
+        type: 'function',
+      },
+    ];
+    // Create contract instance
+    const tokenContract = new web3.eth.Contract(tokenAbi, tokenContractAddress);
+
+    const amountToSend = await web3.utils
+      .toBN(web3.utils.toWei(amount, 'ether'))
+      .div(web3.utils.toBN(10).pow(web3.utils.toBN(18 - tokenDecimals)));
+    const tx = {
+      from: senderAddress,
+      to: tokenContractAddress,
+      data: tokenContract.methods
+        .transfer(receiverAddress, amountToSend)
+        .encodeABI(),
+      gas: 200000,
+    };
+    const signedTx = await web3.eth.accounts.signTransaction(
+      tx,
+      destructPrivateKey
+    );
+
+    const trx = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    console.log('trx', trx);
+    return trx?.transactionHash;
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+    console.log('error', error);
+  }
+}
 
 // BTC WITHDRAW
 async function createBTCWithdraw(req, res, foundAddress) {
@@ -241,12 +570,12 @@ async function createBTCWithdraw(req, res, foundAddress) {
 }
 async function broadcastTransaction(transactionHex) {
   const response = await fetch(
-    "https://maximum-icy-surf.btc-testnet.quiknode.pro/f724ad3b2e0cbb6368dbb00bb1f9750dd7139c06/",
+    'https://maximum-icy-surf.btc-testnet.quiknode.pro/f724ad3b2e0cbb6368dbb00bb1f9750dd7139c06/',
     {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        method: "sendrawtransaction",
+        method: 'sendrawtransaction',
         params: [transactionHex],
       }),
     }
@@ -267,7 +596,7 @@ async function createTransaction(
 ) {
   const satoshiToSend = Math.round(amount * 100000000);
   const network = bitcoin.networks.testnet;
-  const base_url = "https://api.blockcypher.com/v1/btc/test3";
+  const base_url = 'https://api.blockcypher.com/v1/btc/test3';
   const keyPair = ECPair.fromWIF(privateKeyWIF, network);
   const psbt = new bitcoin.Psbt({ network: network });
   const utxosResponse = await axios.get(
@@ -275,7 +604,7 @@ async function createTransaction(
   );
   const utxos = utxosResponse.data.txrefs;
   if (!Array.isArray(utxos) || utxos.length === 0) {
-    throw new Error("No unspent transaction outputs (UTXOs) available");
+    throw new Error('No unspent transaction outputs (UTXOs) available');
   }
   let totalAmountAvailable = 0;
   let inputCount = 0;
@@ -285,12 +614,12 @@ async function createTransaction(
     if (totalAmountAvailable >= satoshiToSend) break;
   }
   if (totalAmountAvailable < satoshiToSend) {
-    throw new Error("Balance is too low for this transaction");
+    throw new Error('Balance is too low for this transaction');
   }
   const fee = calculateFee(inputCount, 2); // 1 input, 2 outputs
   if (totalAmountAvailable < satoshiToSend + fee) {
     throw new Error(
-      "Balance is too low for this transaction with the fee included"
+      'Balance is too low for this transaction with the fee included'
     );
   }
   const changeAmount = totalAmountAvailable - (satoshiToSend + fee);
@@ -302,7 +631,7 @@ async function createTransaction(
     psbt.addInput({
       hash: utxo.tx_hash,
       index: utxo.tx_output_n,
-      nonWitnessUtxo: Buffer.from(utxo.hex, "hex"),
+      nonWitnessUtxo: Buffer.from(utxo.hex, 'hex'),
     });
     if (totalAmountAvailable >= satoshiToSend) break;
   }

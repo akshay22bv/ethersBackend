@@ -18,7 +18,7 @@ async function getBalanceUSDT(req, res) {
       },
     ];
     const endpointUrl =
-      'https://serene-holy-slug.ethereum-sepolia.quiknode.pro/4ab1f5390b551a245dfdd500995143c9cae3d654/';
+      'https://empty-muddy-replica.ethereum-sepolia.quiknode.pro/e283e52f6ddd6eb45e91e745c31c5e2913975de0/';
     const httpProvider = new Web3.providers.HttpProvider(endpointUrl);
     const web3Client = new Web3(httpProvider);
     const tokenAddress = '0x10cc8B8910F149ae4Cf81859d05dCDD34b792F7b';
@@ -27,7 +27,7 @@ async function getBalanceUSDT(req, res) {
 
     const resultInEther = web3Client.utils.fromWei(result, 'ether');
 
-    console.log('resultInEther', resultInEther);
+    // console.log('resultInEther', resultInEther);
 
     res.json({
       success: true,

@@ -1,29 +1,18 @@
-const models = require("../models/index");
-const { checkBtcBalance } = require("./helper");
-
-const { BitcoinWallets } = models;
+const models = require('../models/index');
+const { checkBtcBalance } = require('./helper');
 
 async function getBTCBalance(req, res) {
-  const { address } = req.params;
+  const { walletAddress } = req.params;
 
-  if (!address) {
+  if (!walletAddress) {
     return res
       .status(400)
-      .send({ error: "address query parameter is required" });
+      .send({ error: 'walletAddress query parameter is required' });
   }
 
   try {
-    const balanceSatoshis = await checkBtcBalance(address);
+    const balanceSatoshis = await checkBtcBalance(walletAddress);
     const balanceBTC = balanceSatoshis / 100000000; // Convert satoshis to BTC
-
-    const updateBalance = await BitcoinWallets.update(
-      { balance: parseFloat(balanceBTC) },
-      { where: { address: address } }
-    );
-
-    if (!updateBalance) {
-      res.status(500).send({ error: "Failed to update balance" });
-    }
 
     res.send({ balanceBTC });
   } catch (error) {
