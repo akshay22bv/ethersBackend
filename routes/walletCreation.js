@@ -1,8 +1,14 @@
-const express = require("express");
+const express = require('express');
+const {
+  createhdwallet,
+  getAllWalleName,
+  getWallet,
+} = require('../controller/createWallet');
 const router = express.Router();
-const { createWallet } = require("../controller/walletController");
 
 // Define the GET route
-router.post("/", createWallet);
+router.post('/create', createhdwallet);
+router.get('/', getAllWalleName);
+router.get('/:walletId', getWallet);
 
 module.exports = router;

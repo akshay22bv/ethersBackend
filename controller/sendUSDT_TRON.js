@@ -10,7 +10,7 @@ async function sendUsdt() {
   });
   const fromAddress = 'TXHABjEsGH1eVkhhQeaAMdsJHAtt7PrWTg';
   const contractAddress = 'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj';
-  const toAddress = 'TK7Z1gkqvmHqL4QR632LnDUHJBCwch9fDb';
+  const toAddress = 'TKG4HA1ggsZNtyG4tCkJ53xxN3djVd2YcS';
   const amount = 1000000; // 1 USDT
   try {
     const contract = await tronWeb.contract().at(contractAddress);

@@ -13,20 +13,21 @@ const bitcoinRouter = require('./routes/bitcoinWallet');
 const mnemonicRouter = require('./routes/btcmnemonic');
 const btcbalRouter = require('./routes/btcBalance');
 const loginRoute = require('./routes/login');
-const walletsRoute = require('./routes/mnemonicNWallets');
+const walletsRoute = require('./routes/walletCreation');
+const subWalletsRoute = require('./routes/subWalletCreation');
 const webhookRoute = require('./routes/webhook');
 const transactions = require('./routes/transactions');
 const balances = require('./routes/balance');
 const models = require('./models/');
 
-// const { Transactions, sequelize } = models;
+// const { SubWalletAddress, sequelize } = models;
 
 // async function createWalletTable() {
 //   try {
-//     await Transactions.sync({ force: true }); // Use { force: true } to drop existing table and recreate
-//     console.log('Transactions table created successfully');
+//     await SubWalletAddress.sync({ force: true }); // Use { force: true } to drop existing table and recreate
+//     console.log('SubWalletAddress table created successfully');
 //   } catch (error) {
-//     console.error('Error creating Transactions table:', error);
+//     console.error('Error creating SubWalletAddress table:', error);
 //   } finally {
 //     await sequelize.close(); // Close the Sequelize connection when done
 //   }
@@ -45,6 +46,7 @@ app.use('/mnemonic', mnemonicRouter);
 app.use('/btc-balance', btcbalRouter);
 app.use('/login', loginRoute);
 app.use('/wallets', walletsRoute);
+app.use('/subwallets', subWalletsRoute);
 app.use('/webhooks', webhookRoute);
 app.use('/transactions', transactions);
 app.use('/balance', balances);

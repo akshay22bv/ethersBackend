@@ -1,49 +1,31 @@
-'use strict';
+// Import necessary modules
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class WalletAddress extends Model {
+  class WalletName extends Model {
     static associate(models) {
-      this.belongsTo(models.WalletName, {
+      this.hasMany(models.WalletAddress, {
         foreignKey: 'walletId',
-        targetKey: 'walletId',
+        sourceKey: 'walletId',
       });
     }
-  }
-  WalletAddress.init(
+  } // Define a new model for generating WalletName
+  WalletName.init(
     {
       id: {
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
+        allowNull: false,
       },
       walletId: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      assetId: {
+      walletName: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      privateKey: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      publicKey: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      address: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-
-      balance: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
-      },
-
       createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
@@ -59,12 +41,11 @@ module.exports = (sequelize) => {
     },
     {
       sequelize,
-      modelName: 'WalletAddress',
-      tableName: 'WalletAddress',
-      deletedAt: 'deletedAt',
+      modelName: 'WalletName',
+      tableName: 'WalletName',
       timestamps: true,
       paranoid: true,
     }
   );
-  return WalletAddress;
+  return WalletName;
 };

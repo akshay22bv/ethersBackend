@@ -1,32 +1,31 @@
-// Import necessary modules
+'use strict';
 const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  class Mnemonic extends Model {
+  class SubWalletAddress extends Model {
     static associate(models) {
-      this.hasMany(models.WalletAddress, {
-        foreignKey: 'walletId',
-        sourceKey: 'walletId',
+      this.belongsTo(models.SubWalletName, {
+        foreignKey: 'subWalletId',
+        targetKey: 'subWalletId',
       });
     }
-  } // Define a new model for generating mnemonic
-  Mnemonic.init(
+  }
+  SubWalletAddress.init(
     {
       id: {
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER,
-        allowNull: false,
       },
       walletId: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      walletName: {
-        type: DataTypes.STRING,
+      subWalletId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
-      mnemonic: {
+      assetId: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -37,6 +36,16 @@ module.exports = (sequelize) => {
       publicKey: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      balance: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: 0,
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -53,11 +62,12 @@ module.exports = (sequelize) => {
     },
     {
       sequelize,
-      modelName: 'Mnemonic',
-      tableName: 'Mnemonic',
+      modelName: 'SubWalletAddress',
+      tableName: 'SubWalletAddress',
+      deletedAt: 'deletedAt',
       timestamps: true,
       paranoid: true,
     }
   );
-  return Mnemonic;
+  return SubWalletAddress;
 };

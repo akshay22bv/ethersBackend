@@ -25,7 +25,7 @@ async function getUsdtTRONBalance(req, res) {
       .call();
     const finalBalance = balance / 1e6;
 
-    console.log(`USDT(TRON) Balance ${finalBalance}`);
+    // console.log(`USDT(TRON) Balance ${finalBalance}`);
 
     res.json({
       success: true,

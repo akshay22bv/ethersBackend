@@ -8,7 +8,7 @@ var Web3 = require('web3');
 const { ethers } = require('ethers');
 require('dotenv').config();
 const models = require('../models/index');
-const { WalletName, WalletAddress } = models;
+const { SubWalletName, SubWalletAddress } = models;
 // const mnemonicGen = `${process.env.MASTER_MNEMONIC}`;
 const mnemonicGen =
   'wish device moment funny session emerge scare pyramid have impact guitar wonder';
@@ -27,16 +27,19 @@ const masterNode = ethers.utils.HDNode.fromMnemonic(mnemonicGen);
 //   USDC_POLYGON: 60,
 // };
 // Create Multi Currency Wallet
-async function createhdwallet(req, res) {
+async function createSubHDwallet(req, res) {
   try {
-    const lastWalletName = await WalletName.findOne({
-      order: [['walletId', 'DESC']],
+    const { walletId } = req.params;
+    console.log('walletId', walletId);
+
+    const lastWalletName = await SubWalletName.findOne({
+      order: [['subWalletId', 'DESC']],
     });
-    const lastWalletId = lastWalletName ? lastWalletName.walletId : 0;
-    const walletId = lastWalletId + 1;
+    const lastWalletId = lastWalletName ? lastWalletName.subWalletId : 0;
+    const subWalletId = lastWalletId + 1;
 
     //ETHEREUM
-    const pathETH = `m/44'/60'/${walletId}'/0/0`;
+    const pathETH = `m/44'/60'/${walletId}'/0/${subWalletId}`;
     const wallet = masterNode.derivePath(pathETH);
     const ethAddress = wallet.address;
     const ethPrivateKey = wallet.privateKey;
@@ -49,7 +52,7 @@ async function createhdwallet(req, res) {
     const root = bip32.fromSeed(seed, testnet);
     let pathBTC;
     pathCount = 0;
-    pathBTC = `m/44'/0'/${walletId}'/0/0`;
+    pathBTC = `m/44'/0'/${walletId}'/0/${subWalletId}`;
     const child = root.derivePath(pathBTC);
     const { address } = bitcoin.payments.p2pkh({
       pubkey: child.publicKey,
@@ -66,7 +69,7 @@ async function createhdwallet(req, res) {
     const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
     const trxResult = tronWeb.fromMnemonic(
       mnemonicGen,
-      `m/44'/195'/${walletId}'/0/0`
+      `m/44'/195'/${walletId}'/0/${subWalletId}`
     );
     const trxprivateKey = trxResult.privateKey;
     const trxpublicKey = trxResult.publicKey;
@@ -89,9 +92,10 @@ async function createhdwallet(req, res) {
     const polygonAddress = polygonWallet.address;
     //End
 
-    const walletAddresses = [
+    const subWalletAddresses = [
       {
         walletId,
+        subWalletId,
         privateKey: ethPrivateKey,
         publicKey: ethPublicKey,
         address: ethAddress,
@@ -99,6 +103,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: btcprivateKey,
         publicKey: btcpublicKey,
         address: address,
@@ -106,6 +111,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: ethPrivateKey,
         publicKey: ethPublicKey,
         address: ethAddress,
@@ -113,6 +119,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: ethPrivateKey,
         publicKey: ethPublicKey,
         address: ethAddress,
@@ -120,6 +127,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: trxprivateKey,
         publicKey: trxpublicKey,
         address: trxAddress,
@@ -127,6 +135,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: trxprivateKey,
         publicKey: trxpublicKey,
         address: trxAddress,
@@ -134,6 +143,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: bscprivateKey,
         publicKey: ethPublicKey,
         address: bscAddress,
@@ -141,6 +151,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: bscprivateKey,
         publicKey: ethPublicKey,
         address: bscAddress,
@@ -148,6 +159,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: polygonprivateKey,
         publicKey: ethPublicKey,
         address: polygonAddress,
@@ -155,6 +167,7 @@ async function createhdwallet(req, res) {
       },
       {
         walletId,
+        subWalletId,
         privateKey: polygonprivateKey,
         publicKey: ethPublicKey,
         address: polygonAddress,
@@ -162,29 +175,31 @@ async function createhdwallet(req, res) {
       },
     ];
 
-    const existingAddresses = await WalletAddress.findAll({
+    const existingAddresses = await SubWalletAddress.findAll({
       where: {
-        address: walletAddresses.map((addr) => addr.address),
+        address: subWalletAddresses.map((addr) => addr.address),
       },
     });
 
     // Filter addresses that do not exist
-    const newAddresses = walletAddresses.filter(
+    const newAddresses = subWalletAddresses.filter(
       (addr) =>
         !existingAddresses.some((existing) => existing.address === addr.address)
     );
 
-    const createWalletName = await WalletName.create({
-      walletId: walletId,
-      walletName: 'turbo_nodes_wallet_' + walletId,
+    const createWalletName = await SubWalletName.create({
+      walletId,
+      subWalletId,
     });
 
-    const createWalletAddresses = await WalletAddress.bulkCreate(newAddresses);
+    const createSubWalletAddresses = await SubWalletAddress.bulkCreate(
+      newAddresses
+    );
 
     res.json({
       success: true,
       message: 'Wallet Name and Wallet Addresses Created Successfully',
-      body: { createWalletName, createWalletAddresses },
+      body: { createWalletName, createSubWalletAddresses },
     });
   } catch (error) {
     console.log('failed to create wallet', error);
@@ -193,25 +208,25 @@ async function createhdwallet(req, res) {
 
 async function getAllWalleName(req, res) {
   try {
-    const walletName = await WalletName.findAll({
+    const subWalletName = await SubWalletName.findAll({
       exclude: ['createdAt', 'updatedAt', 'deletedAt'],
     });
 
-    return res.status(200).json({ walletName });
+    return res.status(200).json({ subWalletName });
   } catch (error) {
     console.error('Failed to get all Wallet Name:', error);
     return res.status(500).json({ error: 'Failed to get all Wallet Name' });
   }
 }
 
-async function getWallet(req, res) {
+async function getSubWalletAddress(req, res) {
   try {
     const { walletId } = req.params;
 
     // Fetch the Mnemonic
-    const walletName = await WalletName.findOne({
-      where: { walletId: walletId },
-      include: WalletAddress, // Include associated WalletAddress
+    const walletName = await SubWalletName.findOne({
+      where: { subWalletId: walletId },
+      include: SubWalletAddress, // Include associated WalletAddress
     });
 
     if (!walletName) {
@@ -226,7 +241,7 @@ async function getWallet(req, res) {
 }
 
 module.exports = {
-  createhdwallet,
+  createSubHDwallet,
   getAllWalleName,
-  getWallet,
+  getSubWalletAddress,
 };
