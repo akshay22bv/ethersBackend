@@ -18,6 +18,7 @@ const subWalletsRoute = require('./routes/subWalletCreation');
 const webhookRoute = require('./routes/webhook');
 const transactions = require('./routes/transactions');
 const balances = require('./routes/balance');
+const adminwallets = require('./routes/adminWallets');
 const models = require('./models/');
 
 // const { SubWalletAddress, sequelize } = models;
@@ -50,6 +51,7 @@ app.use('/subwallets', subWalletsRoute);
 app.use('/webhooks', webhookRoute);
 app.use('/transactions', transactions);
 app.use('/balance', balances);
+app.use('/adminwallets', adminwallets);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

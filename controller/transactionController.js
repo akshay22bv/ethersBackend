@@ -2,7 +2,7 @@ const models = require('../models/index');
 const { Transactions } = models;
 
 async function getAllTransactions(req, res) {
-  const { status, direction, asset } = req.query;
+  const { status, direction, asset, lastTen } = req.query;
 
   // Build the where clause based on the filters
   const whereClause = {};
@@ -11,11 +11,18 @@ async function getAllTransactions(req, res) {
   if (asset) whereClause.assetId = asset;
 
   try {
-    const allTransactions = await Transactions.findAll({
+    const options = {
       where: whereClause,
-      exclude: ['createdAt', 'updatedAt', 'deletedAt'],
-      order: [['createdAt', 'DESC']],
-    });
+      order: [['createdAt', 'ASC']],
+      attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
+    };
+
+    if (lastTen === 'true') {
+      options.order = [['createdAt', 'DESC']];
+      options.limit = 10;
+    }
+
+    const allTransactions = await Transactions.findAll(options);
 
     return res.status(200).json({ allTransactions });
   } catch (error) {
