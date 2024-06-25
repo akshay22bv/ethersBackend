@@ -1,6 +1,6 @@
 const TronWeb = require('tronweb');
 const models = require('../models/index');
-const { WalletAddress } = models;
+const { WalletAddress, SubWalletAddress } = models;
 
 async function getUsdtTRONBalance(req, res) {
   try {
@@ -8,6 +8,7 @@ async function getUsdtTRONBalance(req, res) {
     const { walletAddress } = req.params;
     // const walletAddress = 'TXHABjEsGH1eVkhhQeaAMdsJHAtt7PrWTg';
     const assetId = 'USDT_TRON';
+    let getAddress = [];
     const foundAddress = await WalletAddress.findOne({
       where: {
         address: walletAddress,
@@ -15,17 +16,40 @@ async function getUsdtTRONBalance(req, res) {
       },
     });
 
+    if (foundAddress) {
+      getAddress.push(foundAddress.dataValues);
+    } else {
+      const subWalletAddress = await SubWalletAddress.findOne({
+        where: {
+          address: walletAddress,
+          assetId,
+        },
+      });
+
+      if (subWalletAddress) {
+        getAddress.push(subWalletAddress.dataValues);
+      }
+    }
+    let orgPrivateKey = '';
+    for (const getFinalAdd of getAddress) {
+      orgPrivateKey = getFinalAdd.privateKey;
+    }
+
+    const rawPrivateKey = orgPrivateKey;
+    let slicedKey = '';
+    if (rawPrivateKey.startsWith('0x')) {
+      slicedKey = rawPrivateKey.slice(2);
+    }
+
     const tronWeb = new TronWeb({
       fullHost: 'https://nile.trongrid.io/',
-      privateKey: foundAddress.privateKey,
+      privateKey: slicedKey,
     });
     const contract = await tronWeb.contract().at(contractAddress);
-    const balance = await contract.methods
-      .balanceOf(foundAddress.address)
-      .call();
+    const balance = await contract.methods.balanceOf(walletAddress).call();
     const finalBalance = balance / 1e6;
 
-    // console.log(`USDT(TRON) Balance ${finalBalance}`);
+    console.log(`USDT(TRON) Balance ${finalBalance}`);
 
     res.json({
       success: true,

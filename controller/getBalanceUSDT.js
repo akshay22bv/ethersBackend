@@ -27,7 +27,7 @@ async function getBalanceUSDT(req, res) {
 
     const resultInEther = web3Client.utils.fromWei(result, 'ether');
 
-    // console.log('resultInEther', resultInEther);
+    console.log('usdt', resultInEther);
 
     res.json({
       success: true,

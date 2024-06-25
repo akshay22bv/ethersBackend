@@ -9,7 +9,7 @@ const ECPair = ECPairFactory(ecc);
 const axios = require('axios');
 const { parseEther } = require('ethers/lib/utils');
 const models = require('../models/index');
-const { WalletAddress, Transactions, Mnemonic } = models;
+const { WalletAddress, Transactions, SubWalletAddress } = models;
 const {
   YOUR_ALCHEMY_API_KEY,
   NETWORK,
@@ -24,16 +24,31 @@ async function Withdraw(req, res) {
   const { assetId } = req.params;
   const { senderAddress, receiverAddress, amount } = req.body;
 
-  const foundAddress = await WalletAddress.findOne({
+  let foundAddress = [];
+  const getAddress = await WalletAddress.findOne({
     where: {
       address: senderAddress,
       assetId,
     },
-    include: [{ model: Mnemonic }],
   });
 
-  if (!foundAddress) {
-    res.status(500).send({ error: 'Address not found' });
+  if (getAddress) {
+    foundAddress.push(getAddress.dataValues);
+  } else {
+    const subWalletAddress = await SubWalletAddress.findOne({
+      where: {
+        address: senderAddress,
+        assetId,
+      },
+    });
+
+    if (subWalletAddress) {
+      foundAddress.push(subWalletAddress.dataValues);
+    }
+  }
+  let orgPrivateKey = '';
+  for (const getFinalAdd of foundAddress) {
+    orgPrivateKey = getFinalAdd.privateKey;
   }
 
   // creating transaction before withdraw
@@ -51,7 +66,7 @@ async function Withdraw(req, res) {
 
   try {
     if (assetId === 'ETH') {
-      trxHash = await createETHWithdraw(req, res, foundAddress.privateKey);
+      trxHash = await createETHWithdraw(req, res, orgPrivateKey);
     }
 
     if (assetId === 'BTC') {

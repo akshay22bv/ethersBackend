@@ -24,7 +24,7 @@ async function getBalanceUSDCERC20(req, res) {
     // const walletAddress = '0xCA78D52aC719Ce90610AF8845A282FE50F5840aC';
     const result = await contract.methods.balanceOf(walletAddress).call();
     const resultInEther = web3Client.utils.fromWei(result, 'ether');
-    // console.log('resultInEther', resultInEther);
+    console.log('usdcerc20', resultInEther);
     res.json({
       success: true,
       message: 'Fetched USDCERC20 balance Successfully',

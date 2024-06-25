@@ -1,6 +1,6 @@
 var Web3 = require('web3');
 
-// USDCERC20 balance
+// Polygon_USDT balance
 async function getBalancePolygon_USDT(req, res) {
   try {
     const { walletAddress } = req.params;
@@ -24,14 +24,14 @@ async function getBalancePolygon_USDT(req, res) {
     const contract = new web3Client.eth.Contract(minABI, tokenAddress);
     const result = await contract.methods.balanceOf(walletAddress).call();
     const resultInEther = web3Client.utils.fromWei(result, 'ether');
-    // console.log('resultInEther', resultInEther);
+    console.log('Polygon_USDT', resultInEther);
     res.json({
       success: true,
-      message: 'Fetched USDCERC20 balance Successfully',
+      message: 'Fetched Polygon_USDT balance Successfully',
       body: { resultInEther },
     });
   } catch (error) {
-    console.log('failed to get USDCERC20 balance ', error);
+    console.log('failed to get Polygon_USDT balance ', error);
   }
 }
 // getBalancePolygon_USDT();

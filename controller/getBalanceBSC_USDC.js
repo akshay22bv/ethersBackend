@@ -1,6 +1,6 @@
 var Web3 = require('web3');
 
-// USDCERC20 balance
+// BSC_USDC balance
 async function getBalanceBSC_USDC(req, res) {
   try {
     const { walletAddress } = req.params;
@@ -24,14 +24,14 @@ async function getBalanceBSC_USDC(req, res) {
     const contract = new web3Client.eth.Contract(minABI, tokenAddress);
     const result = await contract.methods.balanceOf(walletAddress).call();
     const resultInEther = web3Client.utils.fromWei(result, 'ether');
-    // console.log('resultInEther', resultInEther);
+    console.log('BSC_USDC', resultInEther);
     res.json({
       success: true,
-      message: 'Fetched USDCERC20 balance Successfully',
+      message: 'Fetched BSC_USDC balance Successfully',
       body: { resultInEther },
     });
   } catch (error) {
-    console.log('failed to get USDCERC20 balance ', error);
+    console.log('failed to get BSC_USDC balance ', error);
   }
 }
 // getBalanceBSC_USDC();

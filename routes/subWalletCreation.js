@@ -8,7 +8,7 @@ const router = express.Router();
 
 // Define the GET route
 router.post('/:walletId', createSubHDwallet);
-router.get('/getSubWallets', getAllWalleName);
-router.get('/getSubWallets/:walletId', getSubWalletAddress);
+router.get('/getSubWalletNames/:walletId', getAllWalleName);
+router.get('/wallet/:walletId/subwallet/:subWalletId', getSubWalletAddress);
 
 module.exports = router;

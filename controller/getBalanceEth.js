@@ -11,7 +11,7 @@ async function getBalanceETH(req, res) {
     const web3 = new Web3(new Web3.providers.HttpProvider(testnet));
     const balance = web3.eth.getBalance(walletAddress);
     const etherAmount = ethers.utils.formatEther(await balance);
-    console.log('etherAmount', etherAmount);
+    console.log('ETH', etherAmount);
     res.json({
       success: true,
       message: 'Fetched ETH balance Successfully',

@@ -6,7 +6,6 @@ module.exports = (sequelize) => {
     static associate(models) {
       this.belongsTo(models.SubWalletName, {
         foreignKey: 'subWalletId',
-        targetKey: 'subWalletId',
       });
     }
   }

@@ -1,5 +1,5 @@
-"use strict";
-const { Model, DataTypes } = require("sequelize");
+'use strict';
+const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
   class Adminwallets extends Model {}
@@ -54,9 +54,9 @@ module.exports = (sequelize) => {
     },
     {
       sequelize,
-      modelName: "Adminwallets",
-      tableName: "Adminwallets",
-      deletedAt: "deletedAt",
+      modelName: 'Adminwallets',
+      tableName: 'Adminwallets',
+      deletedAt: 'deletedAt',
       timestamps: true,
       paranoid: true,
     }

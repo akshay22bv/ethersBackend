@@ -27,23 +27,25 @@ const masterNode = ethers.utils.HDNode.fromMnemonic(mnemonicGen);
 //   USDC_POLYGON: 60,
 // };
 // Create Multi Currency Wallet
+
 async function createSubHDwallet(req, res) {
   try {
     const { walletId } = req.params;
     console.log('walletId', walletId);
 
-    const lastWalletName = await SubWalletName.findOne({
-      order: [['subWalletId', 'DESC']],
+    const countSubWallets = await SubWalletName.count({
+      where: { walletId },
     });
-    const lastWalletId = lastWalletName ? lastWalletName.subWalletId : 0;
-    const subWalletId = lastWalletId + 1;
+
+    // Determine the next subWalletId
+    const subWalletId = countSubWallets + 1;
 
     //ETHEREUM
     const pathETH = `m/44'/60'/${walletId}'/0/${subWalletId}`;
     const wallet = masterNode.derivePath(pathETH);
     const ethAddress = wallet.address;
-    const ethPrivateKey = wallet.privateKey;
     const ethPublicKey = wallet.publicKey;
+    const ethPrivateKey = wallet.privateKey;
 
     //BITCOIN
     const testnet = bitcoin.networks.testnet;
@@ -71,9 +73,9 @@ async function createSubHDwallet(req, res) {
       mnemonicGen,
       `m/44'/195'/${walletId}'/0/${subWalletId}`
     );
-    const trxprivateKey = trxResult.privateKey;
     const trxpublicKey = trxResult.publicKey;
     const trxAddress = trxResult.address;
+    const trxprivateKey = trxResult.privateKey;
 
     //BSC
     const web3_bsc = new Web3('https://bsc-dataseed1.binance.org:443');
@@ -208,7 +210,10 @@ async function createSubHDwallet(req, res) {
 
 async function getAllWalleName(req, res) {
   try {
+    const { walletId } = req.params;
+
     const subWalletName = await SubWalletName.findAll({
+      where: { walletId },
       exclude: ['createdAt', 'updatedAt', 'deletedAt'],
     });
 
@@ -221,17 +226,11 @@ async function getAllWalleName(req, res) {
 
 async function getSubWalletAddress(req, res) {
   try {
-    const { walletId } = req.params;
+    const { walletId, subWalletId } = req.params;
 
-    // Fetch the Mnemonic
-    const walletName = await SubWalletName.findOne({
-      where: { subWalletId: walletId },
-      include: SubWalletAddress, // Include associated WalletAddress
+    const walletName = await SubWalletAddress.findAll({
+      where: { walletId, subWalletId },
     });
-
-    if (!walletName) {
-      return res.status(404).json({ error: 'Wallet Name not found' });
-    }
 
     return res.status(200).json({ walletName });
   } catch (error) {

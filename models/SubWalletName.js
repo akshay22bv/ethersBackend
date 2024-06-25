@@ -6,7 +6,7 @@ module.exports = (sequelize) => {
     static associate(models) {
       this.hasMany(models.SubWalletAddress, {
         foreignKey: 'subWalletId',
-        sourceKey: 'subWalletId',
+        as: 'SubWalletAddresses',
       });
     }
   } // Define a new model for generating SubWalletName
